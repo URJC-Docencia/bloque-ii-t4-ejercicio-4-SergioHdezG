@@ -88,13 +88,15 @@ public class RBTree<E> implements BinarySearchTree<E> {
             it.remove();
         }
     }
-    
+
     private final LinkedBinarySearchTree<RBInfo<E>> t = new LinkedBinarySearchTree<>();
     private final Reestructurator r = new Reestructurator();
-    
+
     @Override
     public Position<E> find(E value) {
-        throw new RuntimeException("Not implemented.");
+        RBInfo<E> nodo = new RBInfo<>(value);
+        Position<RBInfo<E>> ret =  this.t.find(nodo);
+        return (ret == null) ? null : ret.getElement();
     }
 
     @Override
@@ -104,7 +106,41 @@ public class RBTree<E> implements BinarySearchTree<E> {
 
     @Override
     public Position<E> insert(E value) {
-        throw new RuntimeException("Not implemented.");
+        RBInfo<E> nodo = new RBInfo<>(value);
+        Position<RBInfo<E>> pos = this.t.find(nodo);
+
+        if(this.t.isEmpty()){
+            Position<RBInfo<E>> root = this.t.insert(nodo);
+            root.getElement().setRed(false);
+            root.getElement().setTreePosition(root);
+            return root.getElement();
+        }
+        else if(pos == null){
+            pos = this.t.insert(nodo);
+
+            if (this.t.parent(pos).getElement().isRed()){
+                Position<RBInfo<E>> abuelo = this.t.parent(this.t.parent(pos));
+                Position<RBInfo<E>> auxLeft = this.t.left(abuelo);
+                Position<RBInfo<E>> auxRight = this.t.right(abuelo);
+
+                Position<RBInfo<E>> tio;
+                if (this.t.parent(pos).equals(auxLeft)){
+                    tio = auxRight;
+                }
+                else{
+                    tio = auxLeft;
+                }
+
+                if (tio.getElement().isRed){ // Caso 2 el tío es rojo
+
+                }
+                else{ // Caso 1 el tío es negro
+                    Position<RBInfo<E>> subRoot = this.r.restructure(pos, this.t);
+
+                }
+            }
+        }
+        return pos.getElement();
     }
 
     @Override
@@ -112,7 +148,7 @@ public class RBTree<E> implements BinarySearchTree<E> {
         throw new RuntimeException("Not implemented.");
     }
 
-    
+
     @Override
     public Iterable<? extends Position<E>> rangeIterator(E m, E M) {
         RBInfo<E> ini = new RBInfo<>(m);
@@ -123,7 +159,7 @@ public class RBTree<E> implements BinarySearchTree<E> {
         }
         return l;
     }
-    
+
     @Override
     public Iterable<? extends Position<E>> children(Position<E> v) {
         RBInfo<E> n = checkPosition(v);
@@ -133,12 +169,12 @@ public class RBTree<E> implements BinarySearchTree<E> {
         }
         return l;
     }
-    
+
     @Override
     public boolean isEmpty() {
         return t.isEmpty();
     }
-    
+
     @Override
     public int size() {
         return t.size();
@@ -202,5 +238,5 @@ public class RBTree<E> implements BinarySearchTree<E> {
     public Iterator<Position<E>> iterator() {
         return new RBTreeIterator<E>(t.iterator());
     }
-    
+
 }

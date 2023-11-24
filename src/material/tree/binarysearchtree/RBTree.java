@@ -118,31 +118,48 @@ public class RBTree<E> implements BinarySearchTree<E> {
         else if(pos == null){
             pos = this.t.insert(nodo);
 
-            if (this.t.parent(pos).getElement().isRed()){
-                Position<RBInfo<E>> abuelo = this.t.parent(this.t.parent(pos));
-                Position<RBInfo<E>> auxLeft = this.t.left(abuelo);
-                Position<RBInfo<E>> auxRight = this.t.right(abuelo);
-
-                Position<RBInfo<E>> tio;
-                if (this.t.parent(pos).equals(auxLeft)){
-                    tio = auxRight;
-                }
-                else{
-                    tio = auxLeft;
-                }
-
-                if (tio.getElement().isRed){ // Caso 2 el tío es rojo
-
-                }
-                else{ // Caso 1 el tío es negro
-                    Position<RBInfo<E>> subRoot = this.r.restructure(pos, this.t);
-
-                }
-            }
+            this.checkDoubleRed(pos);
         }
         return pos.getElement();
     }
 
+    private void checkDoubleRed(Position<RBInfo<E>> pos){
+        
+        if (this.t.isRoot(pos) && this.t.parent(pos).getElement().isRed()){
+
+            Position<RBInfo<E>> tio = this.getUncle(pos);
+
+            if (tio.getElement().isRed){ // Caso 2 el tío es rojo, recolorear nodos
+                tio.getElement().setRed(false);
+                this.t.parent(pos).getElement().setRed(false);
+                this.t.parent(this.t.parent(pos)).getElement().setRed(true);
+
+                checkDoubleRed(this.t.parent(this.t.parent(pos)));
+
+            }
+            else{ // Caso 1 el tío es negro
+                Position<RBInfo<E>> subRoot = this.r.restructure(pos, this.t);
+                subRoot.getElement().setRed(false);
+                this.t.left(subRoot).getElement().setRed(true);
+                this.t.right(subRoot).getElement().setRed(true);
+            }
+        }
+    }
+    
+    private Position<RBInfo<E>> getUncle(Position<RBInfo<E>> pos){
+        Position<RBInfo<E>> abuelo = this.t.parent(this.t.parent(pos));
+        Position<RBInfo<E>> auxLeft = this.t.left(abuelo);
+        Position<RBInfo<E>> auxRight = this.t.right(abuelo);
+
+        Position<RBInfo<E>> tio;
+        if (this.t.parent(pos).equals(auxLeft)){
+            tio = auxRight;
+        }
+        else{
+            tio = auxLeft;
+        }
+        return tio;
+    }
     @Override
     public void remove(Position<E> pos) {
         throw new RuntimeException("Not implemented.");
